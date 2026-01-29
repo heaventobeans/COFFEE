@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>咖啡捷徑參數表（義式＋手沖）</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"PingFang HK","Noto Sans TC","Heiti TC",sans-serif;line-height:1.45;margin:20px;max-width:980px}
+    h1{font-size:22px;margin:0 0 6px}
+    h2{font-size:16px;margin:22px 0 8px}
+    p,li{font-size:14px}
+    table{border-collapse:collapse;width:100%;margin:10px 0}
+    th,td{border:1px solid #ddd;padding:8px;vertical-align:top;font-size:13px}
+    th{background:#f6f6f6;text-align:left}
+    code{background:#f4f4f4;padding:2px 4px;border-radius:4px}
+    .note{background:#fff8e6;border:1px solid #ffe2a8;padding:10px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <h1>咖啡捷徑參數表（義式＋手沖）</h1>
+  <p>用途：用「產地 + 粉量 + 豆種(單一/拼配) + 取向(Fruity/Nutty) + 模式(易飲/突出) + 烘焙度」計算建議水溫、義式出液、手沖總水量，並輸入實際時間判斷偏快/偏慢。</p>
+
+  <div class="note">
+    <strong>提示：</strong>呢頁只係「參數/規則說明」，真正 iCloud 捷徑連結要由你喺 iPhone Shortcuts 入面分享產生。
+  </div>
+
+  <h2>輸入順序（捷徑）</h2>
+  <ol>
+    <li>沖法：義式 / 手沖</li>
+    <li>產地：哥倫比亞 / 衣索比亞 / 肯亞 / 巴拿馬 / 巴西 / 危地馬拉</li>
+    <li>粉量 Dose（g）</li>
+    <li>豆種：單一產地 / 拼配</li>
+    <li>風味取向：Fruity / Nutty</li>
+    <li>模式：更易飲 / 更突出風味</li>
+    <li>烘焙度：淺焙 / 中焙 / 深焙</li>
+  </ol>
+
+  <h2>產地 → 基礎溫度</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>產地</th>
+        <th>Espresso 基礎溫度 (°C)</th>
+        <th>手沖 基礎溫度 (°C)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>哥倫比亞</td><td>91.5</td><td>93</td></tr>
+      <tr><td>衣索比亞</td><td>92.5</td><td>95</td></tr>
+      <tr><td>肯亞</td><td>92.5</td><td>96</td></tr>
+      <tr><td>巴拿馬</td><td>92.5</td><td>94</td></tr>
+      <tr><td>巴西</td><td>90.5</td><td>91</td></tr>
+      <tr><td>危地馬拉</td><td>91.5</td><td>93</td></tr>
+    </tbody>
+  </table>
+
+  <h2>溫度微調（Profile + Mode + Roast）</h2>
+  <p>先計 <code>TempAdj = ProfileAdj + ModeAdj + RoastTempAdj</code>，再 <code>FinalTemp = BaseTemp + TempAdj</code>。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>項目</th>
+        <th>條件</th>
+        <th>調整值</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>ProfileAdj</td><td>Fruity</td><td>+1°C</td></tr>
+      <tr><td>ProfileAdj</td><td>Nutty</td><td>-1°C</td></tr>
+      <tr><td>ModeAdj</td><td>更突出風味</td><td>再加同方向一次（即 ModeAdj = ProfileAdj）</td></tr>
+      <tr><td>ModeAdj</td><td>更易飲</td><td>0°C</td></tr>
+      <tr><td>RoastTempAdj</td><td>淺焙</td><td>+2°C</td></tr>
+      <tr><td>RoastTempAdj</td><td>中焙</td><td>0°C</td></tr>
+      <tr><td>RoastTempAdj</td><td>深焙</td><td>-2°C</td></tr>
+    </tbody>
+  </table>
+
+  <h2>溫度上/下限（clamp）</h2>
+  <ul>
+    <li>Espresso：<code>89–96°C</code></li>
+    <li>手沖：<code>88–96°C</code></li>
+  </ul>
+
+  <h2>Espresso：出液比例（ratio）與出液量</h2>
+  <p>計法：<code>EspFinalRatio = 2.0 + RoastRatioAdj + ProfileRatioAdj + BeanRatioAdj</code>，再 clamp 到 <code>1.0–3.0</code>。</p>
+  <p>出液：<code>EspYield(g) = Dose(g) × EspFinalRatio</code></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>微調項</th>
+        <th>條件</th>
+        <th>RoastRatioAdj / ProfileRatioAdj / BeanRatioAdj</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>RoastRatioAdj</td><td>淺焙</td><td>+0.5</td></tr>
+      <tr><td>RoastRatioAdj</td><td>中焙</td><td>0</td></tr>
+      <tr><td>RoastRatioAdj</td><td>深焙</td><td>-0.5</td></tr>
+
+      <tr><td>ProfileRatioAdj</td><td>Fruity</td><td>+0.2</td></tr>
+      <tr><td>ProfileRatioAdj</td><td>Nutty</td><td>-0.2</td></tr>
+
+      <tr><td>BeanRatioAdj</td><td>單一產地</td><td>+0.1</td></tr>
+      <tr><td>BeanRatioAdj</td><td>拼配</td><td>-0.1</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Espresso：建議時間（EspTimeHint）</h2>
+  <table>
+    <thead>
+      <tr><th>烘焙度</th><th>EspTimeHint</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>淺焙</td><td>28–32 秒（傾向長少少）</td></tr>
+      <tr><td>中焙</td><td>25–30 秒（起點）</td></tr>
+      <tr><td>深焙</td><td>22–28 秒（傾向短少少）</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Espresso：動態門檻（FastThreshold / SlowThreshold）</h2>
+  <p>預設：Fast=25、Slow=30。符合以下條件就覆蓋（由上到下，命中就用該組）。</p>
+  <table>
+    <thead>
+      <tr>
+        <th>規則</th>
+        <th>條件（Roast / Profile / Mode）</th>
+        <th>FastThreshold</th>
+        <th>SlowThreshold</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Rule 1</td><td>深焙 + Nutty + 更突出風味</td><td>23</td><td>28</td></tr>
+      <tr><td>Rule 2</td><td>淺焙 + Fruity + 更突出風味</td><td>28</td><td>32</td></tr>
+      <tr><td>Rule 3</td><td>深焙 + Fruity + 更易飲</td><td>24</td><td>29</td></tr>
+      <tr><td>Default</td><td>其他全部</td><td>25</td><td>30</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Espresso：輸入實際秒數 → 判斷與建議</h2>
+  <ul>
+    <li>如果 <code>ActualTime &lt; FastThreshold</code> → <strong>可能偏快</strong>：磨幼少少／加大阻力；或略收細出液比例。</li>
+    <li>如果 <code>ActualTime &gt; SlowThreshold</code> → <strong>可能偏慢</strong>：磨粗少少／減少阻力；或略放大出液比例。</li>
+    <li>否則 → <strong>大致正常</strong>：以味道微調（清晰→略加大 ratio；厚身→略縮細 ratio）。</li>
+  </ul>
+
+  <h2>手沖：粉水比（1:15–1:20）與總水量</h2>
+  <p>選基礎濃淡（15–20），再按 Mode/Profile/BeanType 做微調，最後 clamp 到 15–20。</p>
+  <p>總水：<code>POWater(g) = Dose(g) × POFinalRatio</code></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>模式</th>
+        <th>ProfileStep（Fruity/Nutty）</th>
+        <th>BeanStep（單一/拼配）</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>更易飲</td><td>1</td><td>0.5</td></tr>
+      <tr><td>更突出風味</td><td>2</td><td>1</td></tr>
+    </tbody>
+  </table>
+
+  <p>計法示例：</p>
+  <ul>
+    <li>Fruity → +ProfileStep；Nutty → -ProfileStep</li>
+    <li>單一產地 → +BeanStep；拼配 → -BeanStep</li>
+  </ul>
+
+  <h2>手沖：輸入實際總時間 → 判斷與建議</h2>
+  <p>參考時間窗（秒）：</p>
+  <ul>
+    <li>更易飲：150–210 秒（2:30–3:30）</li>
+    <li>更突出風味：165–225 秒（2:45–3:45）</li>
+  </ul>
+  <p>判斷：</p>
+  <ul>
+    <li>少於下限 → 可能偏快：磨幼少少／放慢注水／加少少水溫。</li>
+    <li>多於上限 → 可能偏慢：磨粗少少／加快注水／降少少水溫。</li>
+    <li>介乎其間 → 大致正常：按味道微調（想淡→ratio 數字加大；想濃→ratio 數字縮細）。</li>
+  </ul>
+
+  <h2>捷徑輸出模板（可直接搬入 Text action）</h2>
+  <h3>義式 Espresso</h3>
+  <pre style="background:#f7f7f7;border:1px solid #ddd;padding:10px;overflow:auto;font-size:12px;">
+【義式 Espresso】
+產地：{Origin}
+粉量：{Dose} g｜豆種：{BeanType}｜取向：{Profile}
+模式：{Mode}｜烘焙度：{Roast}
+
+建議水溫：{EspTemp} °C（溫度調整 {TempAdj}°C）
+目標出液：{EspYield} g（比例約 1:{EspFinalRatio}）
+
+建議時間：{EspTimeHint}
+＜{FastThreshold} 秒：可能偏快
+＞{SlowThreshold} 秒：可能偏慢
+
+實際時間：{ActualTime} 秒 → {TimeStatus}
+{ActionHint}
+  </pre>
+
+  <h3>手沖 Pour-over</h3>
+  <pre style="background:#f7f7f7;border:1px solid #ddd;padding:10px;overflow:auto;font-size:12px;">
+【手沖 Pour-over】
+產地：{Origin}
+粉量：{Dose} g｜豆種：{BeanType}｜取向：{Profile}
+模式：{Mode}｜烘焙度：{Roast}
+
+建議水溫：{POTemp} °C（溫度調整 {TempAdj}°C）
+粉水比：1:{POFinalRatio}
+總注水量：{POWater} g
+
+參考時間窗：{POFast}–{POSlow} 秒
+實際時間：{POActualTime} 秒 → {POTimeStatus}
+{POActionHint}
+  </pre>
+
+</body>
+</html>
