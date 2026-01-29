@@ -2,219 +2,425 @@
 <html lang="zh-Hant-HK">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>咖啡捷徑參數表（義式＋手沖）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>咖啡建議器（自動計算機）</title>
   <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"PingFang HK","Noto Sans TC","Heiti TC",sans-serif;line-height:1.45;margin:20px;max-width:980px}
-    h1{font-size:22px;margin:0 0 6px}
-    h2{font-size:16px;margin:22px 0 8px}
-    p,li{font-size:14px}
-    table{border-collapse:collapse;width:100%;margin:10px 0}
-    th,td{border:1px solid #ddd;padding:8px;vertical-align:top;font-size:13px}
-    th{background:#f6f6f6;text-align:left}
-    code{background:#f4f4f4;padding:2px 4px;border-radius:4px}
-    .note{background:#fff8e6;border:1px solid #ffe2a8;padding:10px;border-radius:8px}
+    :root{
+      --bg:#0b0f14; --card:#111823; --muted:#9fb0c6; --text:#e8eef7;
+      --line:#223044; --chip:#162235; --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"PingFang HK","Noto Sans TC","Heiti TC",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:var(--sans); background:linear-gradient(180deg,#070a0e, #0b0f14); color:var(--text);}
+    header{padding:18px 16px 6px; max-width:1100px; margin:0 auto;}
+    h1{margin:0 0 6px; font-size:18px;}
+    .sub{color:var(--muted); font-size:13px; margin:0 0 14px;}
+    main{max-width:1100px; margin:0 auto; padding:0 16px 24px;}
+    .grid{display:grid; grid-template-columns:1fr; gap:12px;}
+    @media (min-width: 960px){ .grid{grid-template-columns: 420px 1fr;} }
+    .card{background:rgba(17,24,35,.92); border:1px solid var(--line); border-radius:14px; padding:14px;}
+    .card h2{font-size:14px; margin:0 0 10px;}
+    .row{display:grid; grid-template-columns: 1fr; gap:10px; margin:10px 0;}
+    @media (min-width: 520px){ .row{grid-template-columns: 1fr 1fr;} }
+    label{display:block; font-size:12px; color:var(--muted); margin:0 0 6px;}
+    select,input{width:100%; padding:10px 10px; border-radius:10px; border:1px solid var(--line); background:#0d1420; color:var(--text);}
+    .pill{display:inline-block; padding:6px 10px; background:var(--chip); border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px;}
+    .out{white-space:pre-wrap; font-family:var(--mono); font-size:12px; background:#0a111c; border:1px solid var(--line); padding:12px; border-radius:12px;}
+    .kpi{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0;}
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    button{padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#0d1420; color:var(--text); cursor:pointer;}
+    button:hover{border-color:#2f4667}
+    details{border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:#0a111c; margin-top:10px;}
+    details summary{cursor:pointer; color:var(--muted); font-size:13px;}
+    table{width:100%; border-collapse:collapse; font-size:12px; margin-top:10px;}
+    th,td{border:1px solid var(--line); padding:8px; text-align:left; vertical-align:top;}
+    th{background:#0d1420; color:var(--muted);}
+    .small{font-size:12px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <h1>咖啡捷徑參數表（義式＋手沖）</h1>
-  <p>用途：用「產地 + 粉量 + 豆種(單一/拼配) + 取向(Fruity/Nutty) + 模式(易飲/突出) + 烘焙度」計算建議水溫、義式出液、手沖總水量，並輸入實際時間判斷偏快/偏慢。</p>
+<header>
+  <h1>咖啡建議器（自動計算機）</h1>
+  <p class="sub">揀選條件後會即時計出：義式/手沖水溫、ratio、出液/總水、時間窗、偏快/偏慢提示。</p>
+</header>
 
-  <div class="note">
-    <strong>提示：</strong>呢頁只係「參數/規則說明」，真正 iCloud 捷徑連結要由你喺 iPhone Shortcuts 入面分享產生。
+<main>
+  <div class="grid">
+
+    <section class="card">
+      <h2>輸入</h2>
+
+      <div class="row">
+        <div>
+          <label>顯示</label>
+          <select id="brew">
+            <option value="espresso">義式 Espresso</option>
+            <option value="pourover">手沖 Pour-over</option>
+            <option value="both" selected>兩個都顯示</option>
+          </select>
+        </div>
+        <div>
+          <label>產地</label>
+          <select id="origin">
+            <option>哥倫比亞</option>
+            <option>衣索比亞</option>
+            <option>肯亞</option>
+            <option>巴拿馬</option>
+            <option>巴西</option>
+            <option>危地馬拉</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>粉量 Dose (g)</label>
+          <input id="dose" type="number" value="18" min="5" max="40" step="0.1">
+        </div>
+        <div>
+          <label>豆種</label>
+          <select id="beanType">
+            <option value="single">單一產地</option>
+            <option value="blend">拼配</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>風味取向</label>
+          <select id="profile">
+            <option value="fruity">Fruity</option>
+            <option value="nutty">Nutty</option>
+          </select>
+        </div>
+        <div>
+          <label>模式</label>
+          <select id="mode">
+            <option value="easy">更易飲</option>
+            <option value="expressive">更突出風味</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>烘焙度</label>
+          <select id="roast">
+            <option value="light">淺焙</option>
+            <option value="medium" selected>中焙</option>
+            <option value="dark">深焙</option>
+          </select>
+        </div>
+        <div>
+          <label>手沖基礎粉水比</label>
+          <select id="poBaseRatio">
+            <option value="15">1:15（濃）</option>
+            <option value="16" selected>1:16</option>
+            <option value="17">1:17</option>
+            <option value="18">1:18（較淡）</option>
+            <option value="19">1:19</option>
+            <option value="20">1:20（淡）</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>義式實際時間 (秒)</label>
+          <input id="espTime" type="number" value="28" min="5" max="60" step="1">
+        </div>
+        <div>
+          <label>手沖實際總時間 (秒)</label>
+          <input id="poTime" type="number" value="195" min="60" max="420" step="1">
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button id="reset">重置預設</button>
+        <button id="copy">複製輸出文字</button>
+      </div>
+
+      <details>
+        <summary>顯示 / 修改參數表（即改即生效）</summary>
+
+        <p class="small">改下面「產地基礎溫度」後會即時反映計算結果。</p>
+
+        <table id="tempTable">
+          <thead>
+            <tr><th>產地</th><th>Esp 基礎溫度</th><th>手沖 基礎溫度</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <table>
+          <thead>
+            <tr><th>Esp 動態門檻規則</th><th>條件</th><th>Fast</th><th>Slow</th></tr>
+          </thead>
+          <tbody id="ruleTable"></tbody>
+        </table>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2>輸出</h2>
+      <div class="kpi">
+        <span class="pill" id="kpiOrigin"></span>
+        <span class="pill" id="kpiDose"></span>
+        <span class="pill" id="kpiMeta"></span>
+      </div>
+
+      <div id="espressoBlock" style="margin-top:10px;">
+        <div class="out" id="espressoOut"></div>
+      </div>
+
+      <div id="pouroverBlock" style="margin-top:10px;">
+        <div class="out" id="pouroverOut"></div>
+      </div>
+    </section>
+
   </div>
+</main>
 
-  <h2>輸入順序（捷徑）</h2>
-  <ol>
-    <li>沖法：義式 / 手沖</li>
-    <li>產地：哥倫比亞 / 衣索比亞 / 肯亞 / 巴拿馬 / 巴西 / 危地馬拉</li>
-    <li>粉量 Dose（g）</li>
-    <li>豆種：單一產地 / 拼配</li>
-    <li>風味取向：Fruity / Nutty</li>
-    <li>模式：更易飲 / 更突出風味</li>
-    <li>烘焙度：淺焙 / 中焙 / 深焙</li>
-  </ol>
+<script>
+  const params = {
+    originTemps: {
+      "哥倫比亞": { esp: 91.5, po: 93 },
+      "衣索比亞": { esp: 92.5, po: 95 },
+      "肯亞":     { esp: 92.5, po: 96 },
+      "巴拿馬":   { esp: 92.5, po: 94 },
+      "巴西":     { esp: 90.5, po: 91 },
+      "危地馬拉": { esp: 91.5, po: 93 },
+    },
 
-  <h2>產地 → 基礎溫度</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>產地</th>
-        <th>Espresso 基礎溫度 (°C)</th>
-        <th>手沖 基礎溫度 (°C)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>哥倫比亞</td><td>91.5</td><td>93</td></tr>
-      <tr><td>衣索比亞</td><td>92.5</td><td>95</td></tr>
-      <tr><td>肯亞</td><td>92.5</td><td>96</td></tr>
-      <tr><td>巴拿馬</td><td>92.5</td><td>94</td></tr>
-      <tr><td>巴西</td><td>90.5</td><td>91</td></tr>
-      <tr><td>危地馬拉</td><td>91.5</td><td>93</td></tr>
-    </tbody>
-  </table>
+    espBaseRatio: 2.0,
+    clamp: { espTemp:[89,96], poTemp:[88,96], espRatio:[1.0,3.0], poRatio:[15,20] },
 
-  <h2>溫度微調（Profile + Mode + Roast）</h2>
-  <p>先計 <code>TempAdj = ProfileAdj + ModeAdj + RoastTempAdj</code>，再 <code>FinalTemp = BaseTemp + TempAdj</code>。</p>
-  <table>
-    <thead>
-      <tr>
-        <th>項目</th>
-        <th>條件</th>
-        <th>調整值</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>ProfileAdj</td><td>Fruity</td><td>+1°C</td></tr>
-      <tr><td>ProfileAdj</td><td>Nutty</td><td>-1°C</td></tr>
-      <tr><td>ModeAdj</td><td>更突出風味</td><td>再加同方向一次（即 ModeAdj = ProfileAdj）</td></tr>
-      <tr><td>ModeAdj</td><td>更易飲</td><td>0°C</td></tr>
-      <tr><td>RoastTempAdj</td><td>淺焙</td><td>+2°C</td></tr>
-      <tr><td>RoastTempAdj</td><td>中焙</td><td>0°C</td></tr>
-      <tr><td>RoastTempAdj</td><td>深焙</td><td>-2°C</td></tr>
-    </tbody>
-  </table>
+    roast: {
+      light:  { tempAdj:+2, ratioAdj:+0.5, timeHint:"28–32 秒（傾向長少少）" },
+      medium: { tempAdj: 0, ratioAdj: 0,   timeHint:"25–30 秒（起點）" },
+      dark:   { tempAdj:-2, ratioAdj:-0.5, timeHint:"22–28 秒（傾向短少少）" },
+    },
+    profile: {
+      fruity: { tempAdj:+1, espRatioAdj:+0.2 },
+      nutty:  { tempAdj:-1, espRatioAdj:-0.2 },
+    },
+    beanType: {
+      single: { espRatioAdj:+0.1, poRatioAdj:+0.5 },
+      blend:  { espRatioAdj:-0.1, poRatioAdj:-0.5 },
+    },
+    poModeSteps: {
+      easy:       { profileStep:1, beanStep:0.5, timeWin:[150,210] },
+      expressive: { profileStep:2, beanStep:1,   timeWin:[165,225] },
+    },
 
-  <h2>溫度上/下限（clamp）</h2>
-  <ul>
-    <li>Espresso：<code>89–96°C</code></li>
-    <li>手沖：<code>88–96°C</code></li>
-  </ul>
+    espRules: [
+      { name:"Rule 1", roast:"dark",  profile:"nutty",  mode:"expressive", fast:23, slow:28 },
+      { name:"Rule 2", roast:"light", profile:"fruity", mode:"expressive", fast:28, slow:32 },
+      { name:"Rule 3", roast:"dark",  profile:"fruity", mode:"easy",       fast:24, slow:29 },
+    ],
+    espDefault: { fast:25, slow:30 }
+  };
 
-  <h2>Espresso：出液比例（ratio）與出液量</h2>
-  <p>計法：<code>EspFinalRatio = 2.0 + RoastRatioAdj + ProfileRatioAdj + BeanRatioAdj</code>，再 clamp 到 <code>1.0–3.0</code>。</p>
-  <p>出液：<code>EspYield(g) = Dose(g) × EspFinalRatio</code></p>
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+  const round1=(v)=>Math.round(v*10)/10;
+  const $=(id)=>document.getElementById(id);
 
-  <table>
-    <thead>
-      <tr>
-        <th>微調項</th>
-        <th>條件</th>
-        <th>RoastRatioAdj / ProfileRatioAdj / BeanRatioAdj</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>RoastRatioAdj</td><td>淺焙</td><td>+0.5</td></tr>
-      <tr><td>RoastRatioAdj</td><td>中焙</td><td>0</td></tr>
-      <tr><td>RoastRatioAdj</td><td>深焙</td><td>-0.5</td></tr>
+  function getEspThresholds(s){
+    for(const r of params.espRules){
+      if(r.roast===s.roast && r.profile===s.profile && r.mode===s.mode) return {fast:r.fast, slow:r.slow, rule:r.name};
+    }
+    return {fast:params.espDefault.fast, slow:params.espDefault.slow, rule:"Default"};
+  }
+  function timeStatus(actual, fast, slow){
+    if(actual < fast) return "可能偏快";
+    if(actual > slow) return "可能偏慢";
+    return "大致正常";
+  }
+  function espActionHint(status){
+    if(status==="可能偏快") return "建議：磨幼少少／加大阻力；或略收細出液比例。";
+    if(status==="可能偏慢") return "建議：磨粗少少／減少阻力；或略放大出液比例。";
+    return "建議：以味道微調（清晰→略加大 ratio；厚身→略縮細 ratio）。";
+  }
+  function poActionHint(status){
+    if(status==="可能偏快") return "建議：磨幼少少／放慢注水／加少少水溫。";
+    if(status==="可能偏慢") return "建議：磨粗少少／加快注水／降少少水溫。";
+    return "建議：按味道微調（想淡→ratio 數字加大；想濃→ratio 數字縮細）。";
+  }
 
-      <tr><td>ProfileRatioAdj</td><td>Fruity</td><td>+0.2</td></tr>
-      <tr><td>ProfileRatioAdj</td><td>Nutty</td><td>-0.2</td></tr>
+  function readState(){
+    return {
+      brew:$("brew").value,
+      origin:$("origin").value,
+      dose:parseFloat($("dose").value||"0"),
+      beanType:$("beanType").value,
+      profile:$("profile").value,
+      mode:$("mode").value,
+      roast:$("roast").value,
+      poBaseRatio:parseFloat($("poBaseRatio").value||"16"),
+      espTime:parseFloat($("espTime").value||"0"),
+      poTime:parseFloat($("poTime").value||"0"),
+    };
+  }
 
-      <tr><td>BeanRatioAdj</td><td>單一產地</td><td>+0.1</td></tr>
-      <tr><td>BeanRatioAdj</td><td>拼配</td><td>-0.1</td></tr>
-    </tbody>
-  </table>
+  function compute(s){
+    const base=params.originTemps[s.origin];
 
-  <h2>Espresso：建議時間（EspTimeHint）</h2>
-  <table>
-    <thead>
-      <tr><th>烘焙度</th><th>EspTimeHint</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>淺焙</td><td>28–32 秒（傾向長少少）</td></tr>
-      <tr><td>中焙</td><td>25–30 秒（起點）</td></tr>
-      <tr><td>深焙</td><td>22–28 秒（傾向短少少）</td></tr>
-    </tbody>
-  </table>
+    const profileTempAdj=params.profile[s.profile].tempAdj;
+    const modeTempAdj=(s.mode==="expressive") ? profileTempAdj : 0;
+    const roastTempAdj=params.roast[s.roast].tempAdj;
+    const tempAdj=profileTempAdj + modeTempAdj + roastTempAdj;
 
-  <h2>Espresso：動態門檻（FastThreshold / SlowThreshold）</h2>
-  <p>預設：Fast=25、Slow=30。符合以下條件就覆蓋（由上到下，命中就用該組）。</p>
-  <table>
-    <thead>
-      <tr>
-        <th>規則</th>
-        <th>條件（Roast / Profile / Mode）</th>
-        <th>FastThreshold</th>
-        <th>SlowThreshold</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>Rule 1</td><td>深焙 + Nutty + 更突出風味</td><td>23</td><td>28</td></tr>
-      <tr><td>Rule 2</td><td>淺焙 + Fruity + 更突出風味</td><td>28</td><td>32</td></tr>
-      <tr><td>Rule 3</td><td>深焙 + Fruity + 更易飲</td><td>24</td><td>29</td></tr>
-      <tr><td>Default</td><td>其他全部</td><td>25</td><td>30</td></tr>
-    </tbody>
-  </table>
+    const espTemp=clamp(base.esp + tempAdj, ...params.clamp.espTemp);
+    const poTemp =clamp(base.po  + tempAdj, ...params.clamp.poTemp);
 
-  <h2>Espresso：輸入實際秒數 → 判斷與建議</h2>
-  <ul>
-    <li>如果 <code>ActualTime &lt; FastThreshold</code> → <strong>可能偏快</strong>：磨幼少少／加大阻力；或略收細出液比例。</li>
-    <li>如果 <code>ActualTime &gt; SlowThreshold</code> → <strong>可能偏慢</strong>：磨粗少少／減少阻力；或略放大出液比例。</li>
-    <li>否則 → <strong>大致正常</strong>：以味道微調（清晰→略加大 ratio；厚身→略縮細 ratio）。</li>
-  </ul>
+    const espRatioRaw=params.espBaseRatio + params.roast[s.roast].ratioAdj + params.profile[s.profile].espRatioAdj + params.beanType[s.beanType].espRatioAdj;
+    const espRatio=clamp(round1(espRatioRaw), ...params.clamp.espRatio);
+    const espYield=round1(s.dose * espRatio);
 
-  <h2>手沖：粉水比（1:15–1:20）與總水量</h2>
-  <p>選基礎濃淡（15–20），再按 Mode/Profile/BeanType 做微調，最後 clamp 到 15–20。</p>
-  <p>總水：<code>POWater(g) = Dose(g) × POFinalRatio</code></p>
+    const th=getEspThresholds(s);
+    const espTimeStatus=timeStatus(s.espTime, th.fast, th.slow);
 
-  <table>
-    <thead>
-      <tr>
-        <th>模式</th>
-        <th>ProfileStep（Fruity/Nutty）</th>
-        <th>BeanStep（單一/拼配）</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>更易飲</td><td>1</td><td>0.5</td></tr>
-      <tr><td>更突出風味</td><td>2</td><td>1</td></tr>
-    </tbody>
-  </table>
+    const steps=params.poModeSteps[s.mode];
+    const profileStep=(s.profile==="fruity") ? +steps.profileStep : -steps.profileStep;
+    const beanStep=(s.beanType==="single") ? +steps.beanStep : -steps.beanStep;
 
-  <p>計法示例：</p>
-  <ul>
-    <li>Fruity → +ProfileStep；Nutty → -ProfileStep</li>
-    <li>單一產地 → +BeanStep；拼配 → -BeanStep</li>
-  </ul>
+    const poRatioRaw=s.poBaseRatio + profileStep + beanStep;
+    const poRatio=clamp(round1(poRatioRaw), ...params.clamp.poRatio);
+    const poWater=Math.round(s.dose * poRatio);
 
-  <h2>手沖：輸入實際總時間 → 判斷與建議</h2>
-  <p>參考時間窗（秒）：</p>
-  <ul>
-    <li>更易飲：150–210 秒（2:30–3:30）</li>
-    <li>更突出風味：165–225 秒（2:45–3:45）</li>
-  </ul>
-  <p>判斷：</p>
-  <ul>
-    <li>少於下限 → 可能偏快：磨幼少少／放慢注水／加少少水溫。</li>
-    <li>多於上限 → 可能偏慢：磨粗少少／加快注水／降少少水溫。</li>
-    <li>介乎其間 → 大致正常：按味道微調（想淡→ratio 數字加大；想濃→ratio 數字縮細）。</li>
-  </ul>
+    const [poFast, poSlow]=steps.timeWin;
+    let poTimeStatus="大致正常";
+    if(s.poTime < poFast) poTimeStatus="可能偏快";
+    else if(s.poTime > poSlow) poTimeStatus="可能偏慢";
 
-  <h2>捷徑輸出模板（可直接搬入 Text action）</h2>
-  <h3>義式 Espresso</h3>
-  <pre style="background:#f7f7f7;border:1px solid #ddd;padding:10px;overflow:auto;font-size:12px;">
-【義式 Espresso】
-產地：{Origin}
-粉量：{Dose} g｜豆種：{BeanType}｜取向：{Profile}
-模式：{Mode}｜烘焙度：{Roast}
+    return {
+      tempAdj,
+      espTemp, poTemp,
+      espRatio, espYield,
+      espFast:th.fast, espSlow:th.slow, espRule:th.rule, espTimeHint:params.roast[s.roast].timeHint,
+      espTimeStatus, espAction:espActionHint(espTimeStatus),
+      poRatio, poWater, poFast, poSlow, poTimeStatus, poAction:poActionHint(poTimeStatus)
+    };
+  }
 
-建議水溫：{EspTemp} °C（溫度調整 {TempAdj}°C）
-目標出液：{EspYield} g（比例約 1:{EspFinalRatio}）
+  function formatEsp(s,c){
+    return [
+      "【義式 Espresso】",
+      產地：${s.origin},
+      粉量：${s.dose} g｜豆種：${s.beanType==="single"?"單一產地":"拼配"}｜取向：${s.profile==="fruity"?"Fruity":"Nutty"},
+      模式：${s.mode==="easy"?"更易飲":"更突出風味"}｜烘焙度：${s.roast==="light"?"淺焙":s.roast==="medium"?"中焙":"深焙"},
+      "",
+      建議水溫：${c.espTemp} °C（溫度調整 ${c.tempAdj}°C）,
+      目標出液：${c.espYield} g（比例約 1:${c.espRatio}）,
+      "",
+      建議時間：${c.espTimeHint},
+      門檻（${c.espRule}）：＜${c.espFast}s 偏快｜＞${c.espSlow}s 偏慢,
+      實際時間：${s.espTime} s → ${c.espTimeStatus},
+      c.espAction
+    ].join("\n");
+  }
+  function formatPO(s,c){
+    return [
+      "【手沖 Pour-over】",
+      產地：${s.origin},
+      粉量：${s.dose} g｜豆種：${s.beanType==="single"?"單一產地":"拼配"}｜取向：${s.profile==="fruity"?"Fruity":"Nutty"},
+      模式：${s.mode==="easy"?"更易飲":"更突出風味"}｜烘焙度：${s.roast==="light"?"淺焙":s.roast==="medium"?"中焙":"深焙"},
+      "",
+      建議水溫：${c.poTemp} °C（溫度調整 ${c.tempAdj}°C）,
+      粉水比：1:${c.poRatio},
+      總注水量：${c.poWater} g,
+      "",
+      參考時間窗：${c.poFast}–${c.poSlow} s,
+      實際時間：${s.poTime} s → ${c.poTimeStatus},
+      c.poAction
+    ].join("\n");
+  }
 
-建議時間：{EspTimeHint}
-＜{FastThreshold} 秒：可能偏快
-＞{SlowThreshold} 秒：可能偏慢
+  function renderTables(){
+    const tb=$("tempTable").querySelector("tbody");
+    tb.innerHTML="";
+    Object.entries(params.originTemps).forEach(([k,v])=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${k}</td>
+        <td><input data-origin="${k}" data-field="esp" type="number" step="0.5" value="${v.esp}" style="width:110px"></td>
+        <td><input data-origin="${k}" data-field="po" type="number" step="0.5" value="${v.po}" style="width:110px"></td>
+      `;
+      tb.appendChild(tr);
+    });
 
-實際時間：{ActualTime} 秒 → {TimeStatus}
-{ActionHint}
-  </pre>
+    const rb=$("ruleTable");
+    rb.innerHTML="";
+    params.espRules.forEach(r=>{
+      const tr=document.createElement("tr");
+      tr.innerHTML=<td>${r.name}</td><td>${r.roast} + ${r.profile} + ${r.mode}</td><td>${r.fast}</td><td>${r.slow}</td>;
+      rb.appendChild(tr);
+    });
+    const trD=document.createElement("tr");
+    trD.innerHTML=<td>Default</td><td>其他全部</td><td>${params.espDefault.fast}</td><td>${params.espDefault.slow}</td>;
+    rb.appendChild(trD);
 
-  <h3>手沖 Pour-over</h3>
-  <pre style="background:#f7f7f7;border:1px solid #ddd;padding:10px;overflow:auto;font-size:12px;">
-【手沖 Pour-over】
-產地：{Origin}
-粉量：{Dose} g｜豆種：{BeanType}｜取向：{Profile}
-模式：{Mode}｜烘焙度：{Roast}
+    tb.querySelectorAll("input").forEach(inp=>{
+      inp.addEventListener("input", ()=>{
+        const origin=inp.getAttribute("data-origin");
+        const field=inp.getAttribute("data-field");
+        params.originTemps[origin][field]=parseFloat(inp.value||"0");
+        update();
+      });
+    });
+  }
 
-建議水溫：{POTemp} °C（溫度調整 {TempAdj}°C）
-粉水比：1:{POFinalRatio}
-總注水量：{POWater} g
+  function update(){
+    const s=readState();
+    const c=compute(s);
 
-參考時間窗：{POFast}–{POSlow} 秒
-實際時間：{POActualTime} 秒 → {POTimeStatus}
-{POActionHint}
-  </pre>
+    $("kpiOrigin").textContent=產地：${s.origin};
+    $("kpiDose").textContent=Dose：${s.dose} g;
+    $("kpiMeta").textContent=${s.beanType==="single"?"單一":"拼配"} / ${s.profile} / ${s.mode} / ${s.roast};
 
+    const showEsp=(s.brew==="espresso"||s.brew==="both");
+    const showPO=(s.brew==="pourover"||s.brew==="both");
+    $("espressoBlock").style.display=showEsp?"block":"none";
+    $("pouroverBlock").style.display=showPO?"block":"none";
+
+    $("espressoOut").textContent=formatEsp(s,c);
+    $("pouroverOut").textContent=formatPO(s,c);
+  }
+
+  function bind(){
+    ["brew","origin","dose","beanType","profile","mode","roast","poBaseRatio","espTime","poTime"].forEach(id => $(id).addEventListener("input", update));
+
+    $("reset").addEventListener("click", ()=>{
+      $("brew").value="both";
+      $("origin").value="肯亞";
+      $("dose").value=18;
+      $("beanType").value="single";
+      $("profile").value="fruity";
+      $("mode").value="expressive";
+      $("roast").value="medium";
+      $("poBaseRatio").value="16";
+      $("espTime").value=28;
+      $("poTime").value=195;
+      update();
+    });
+
+    $("copy").addEventListener("click", async ()=>{
+      const s=readState();
+      const c=compute(s);
+      let text="";
+      if (s.brew==="espresso") text=formatEsp(s,c);
+      else if (s.brew==="pourover") text=formatPO(s,c);
+      else text=formatEsp(s,c) + "\n\n" + formatPO(s,c);
+
+      try{ await navigator.clipboard.writeText(text); $("copy").textContent="已複製"; setTimeout(()=> $("copy").textContent="複製輸出文字", 900); }
+      catch(e){ alert("無法直接複製，請手動選取文字複製。"); }
+    });
+  }
+
+  renderTables();
+  bind();
+  update();
+</script>
 </body>
 </html>
