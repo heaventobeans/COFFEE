@@ -130,10 +130,20 @@
           <label>義式實際時間 (秒)</label>
           <input id="espTime" type="number" value="28" min="5" max="60" step="1">
         </div>
+
         <div>
-          <label>手沖實際總時間 (秒)</label>
-          <input id="poTimeSec" type="number" value="195" min="60" max="600" step="1">
-          <div class="hint">可 1 秒咁加減；下方會顯示成 mm:ss。</div>
+          <label>手沖實際總時間（分:秒）</label>
+          <div class="row" style="margin:0;">
+            <div>
+              <label style="margin-top:0;">分鐘</label>
+              <input id="poMin" type="number" value="3" min="0" max="20" step="1">
+            </div>
+            <div>
+              <label style="margin-top:0;">秒（0–59）</label>
+              <input id="poSec" type="number" value="15" min="0" max="59" step="1">
+            </div>
+          </div>
+          <div class="hint">例如 3:15 = 195 秒；秒欄可 1 秒咁加減。</div>
         </div>
       </div>
 
@@ -157,7 +167,7 @@
         <div class="out" id="espressoOut"></div>
       </div>
 
-      <div id="pouroverBlock" style="display:none;margin-top:0;">
+      <div id="pouroverBlock" style="display:none;">
         <div class="out" id="pouroverOut"></div>
       </div>
     </section>
@@ -231,6 +241,10 @@
   }
 
   function readState(){
+    const poMin = parseFloat($("poMin").value || "0");
+    const poSec = parseFloat($("poSec").value || "0");
+    const poTimeSec = poMin * 60 + poSec; // 分鐘×60 + 秒
+
     return {
       brew: $("brew").value,
       origin: $("origin").value,
@@ -241,7 +255,7 @@
       roast: $("roast").value,
       poBaseRatio: parseFloat($("poBaseRatio").value || "16"),
       espTime: parseFloat($("espTime").value || "0"),
-      poTimeSec: parseFloat($("poTimeSec").value || "0"),
+      poMin, poSec, poTimeSec
     };
   }
 
@@ -291,6 +305,7 @@
 
   function formatPO(s,c){
     const sec = r0(s.poTimeSec);
+    const shown = `${r0(s.poMin)}:${String(r0(s.poSec)).padStart(2,"0")}`;
     return [
       "【手沖 Pour-over】",
       `產地：${s.origin}`,
@@ -302,7 +317,7 @@
       `總注水量：${c.poWater} g`,
       "",
       `參考時間窗：${c.poFast}–${c.poSlow} s（約 ${fmtMinSec(c.poFast)}–${fmtMinSec(c.poSlow)}）`,
-      `實際時間：${sec} s（${fmtMinSec(sec)}） → ${c.poStatus}`,
+      `實際時間：${shown}（${sec} s） → ${c.poStatus}`,
       poHint(c.poStatus)
     ].join("\n");
   }
@@ -324,7 +339,7 @@
   }
 
   function bind(){
-    ["brew","origin","dose","beanType","profile","mode","roast","poBaseRatio","espTime","poTimeSec"]
+    ["brew","origin","dose","beanType","profile","mode","roast","poBaseRatio","espTime","poMin","poSec"]
       .forEach(id => $(id).addEventListener("input", update));
 
     $("reset").addEventListener("click", ()=>{
@@ -337,7 +352,8 @@
       $("roast").value="medium";
       $("poBaseRatio").value="16";
       $("espTime").value=28;
-      $("poTimeSec").value=195;
+      $("poMin").value=3;
+      $("poSec").value=15;
       update();
     });
 
