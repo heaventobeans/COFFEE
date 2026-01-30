@@ -1,20 +1,4 @@
-[晚上7:02, 2026年1月29日] Skyliner Lai: <!doctype html>
-<html lang="zh-Hant-HK">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>咖啡捷徑參數表（義式＋手沖）</title>
-  <style>
-    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,"PingFang HK","Noto Sans TC","Heiti TC",sans-serif;line-height:1.45;margin:20px;max-width:980px}
-    h1{font-size:22px;margin:0 0 6px}
-    h2{font-size:16px;margin:22px 0 8px}
-    p,li{font-size:14px}
-    table{border-collapse:collapse;width:100%;margin:10px 0}
-    th,td{border:1px solid #ddd;padding:8px;vertical-align:top;font-size:13px}
-    th{background:#f6f6f6;text-align:left}
-    code{background:#f4f4f4;padding:2px 4px;border-radius:4px}
-    .note{background:#fff8e6;border:1px solid #ffe2a8;…
-[晚上7:41, 2026年1月29日] Skyliner Lai: <!doctype html>
+<!doctype html>
 <html lang="zh-Hant-HK">
 <head>
   <meta charset="utf-8" />
@@ -57,7 +41,7 @@
 <body>
 <header>
   <h1>咖啡建議器（自動計算機）</h1>
-  <p class="sub">揀選條件後會即時計出：義式/手沖水溫、ratio、出液/總水、時間窗、偏快/偏慢提示。</p>
+  <p class="sub">揀選條件後即時計出：義式/手沖水溫、ratio、出液/總水、時間窗、偏快/偏慢提示。</p>
 </header>
 
 <main>
@@ -323,32 +307,32 @@
   function formatEsp(s,c){
     return [
       "【義式 Espresso】",
-      產地：${s.origin},
-      粉量：${s.dose} g｜豆種：${s.beanType==="single"?"單一產地":"拼配"}｜取向：${s.profile==="fruity"?"Fruity":"Nutty"},
-      模式：${s.mode==="easy"?"更易飲":"更突出風味"}｜烘焙度：${s.roast==="light"?"淺焙":s.roast==="medium"?"中焙":"深焙"},
+      `產地：${s.origin}`,
+      `粉量：${s.dose} g｜豆種：${s.beanType==="single"?"單一產地":"拼配"}｜取向：${s.profile==="fruity"?"Fruity":"Nutty"}`,
+      `模式：${s.mode==="easy"?"更易飲":"更突出風味"}｜烘焙度：${s.roast==="light"?"淺焙":s.roast==="medium"?"中焙":"深焙"}`,
       "",
-      建議水溫：${c.espTemp} °C（溫度調整 ${c.tempAdj}°C）,
-      目標出液：${c.espYield} g（比例約 1:${c.espRatio}）,
+      `建議水溫：${c.espTemp} °C（溫度調整 ${c.tempAdj}°C）`,
+      `目標出液：${c.espYield} g（比例約 1:${c.espRatio}）`,
       "",
-      建議時間：${c.espTimeHint},
-      門檻（${c.espRule}）：＜${c.espFast}s 偏快｜＞${c.espSlow}s 偏慢,
-      實際時間：${s.espTime} s → ${c.espTimeStatus},
+      `建議時間：${c.espTimeHint}`,
+      `門檻（${c.espRule}）：＜${c.espFast}s 偏快｜＞${c.espSlow}s 偏慢`,
+      `實際時間：${s.espTime} s → ${c.espTimeStatus}`,
       c.espAction
     ].join("\n");
   }
   function formatPO(s,c){
     return [
       "【手沖 Pour-over】",
-      產地：${s.origin},
-      粉量：${s.dose} g｜豆種：${s.beanType==="single"?"單一產地":"拼配"}｜取向：${s.profile==="fruity"?"Fruity":"Nutty"},
-      模式：${s.mode==="easy"?"更易飲":"更突出風味"}｜烘焙度：${s.roast==="light"?"淺焙":s.roast==="medium"?"中焙":"深焙"},
+      `產地：${s.origin}`,
+      `粉量：${s.dose} g｜豆種：${s.beanType==="single"?"單一產地":"拼配"}｜取向：${s.profile==="fruity"?"Fruity":"Nutty"}`,
+      `模式：${s.mode==="easy"?"更易飲":"更突出風味"}｜烘焙度：${s.roast==="light"?"淺焙":s.roast==="medium"?"中焙":"深焙"}`,
       "",
-      建議水溫：${c.poTemp} °C（溫度調整 ${c.tempAdj}°C）,
-      粉水比：1:${c.poRatio},
-      總注水量：${c.poWater} g,
+      `建議水溫：${c.poTemp} °C（溫度調整 ${c.tempAdj}°C）`,
+      `粉水比：1:${c.poRatio}`,
+      `總注水量：${c.poWater} g`,
       "",
-      參考時間窗：${c.poFast}–${c.poSlow} s,
-      實際時間：${s.poTime} s → ${c.poTimeStatus},
+      `參考時間窗：${c.poFast}–${c.poSlow} s`,
+      `實際時間：${s.poTime} s → ${c.poTimeStatus}`,
       c.poAction
     ].join("\n");
   }
@@ -370,11 +354,11 @@
     rb.innerHTML="";
     params.espRules.forEach(r=>{
       const tr=document.createElement("tr");
-      tr.innerHTML=<td>${r.name}</td><td>${r.roast} + ${r.profile} + ${r.mode}</td><td>${r.fast}</td><td>${r.slow}</td>;
+      tr.innerHTML=`<td>${r.name}</td><td>${r.roast} + ${r.profile} + ${r.mode}</td><td>${r.fast}</td><td>${r.slow}</td>`;
       rb.appendChild(tr);
     });
     const trD=document.createElement("tr");
-    trD.innerHTML=<td>Default</td><td>其他全部</td><td>${params.espDefault.fast}</td><td>${params.espDefault.slow}</td>;
+    trD.innerHTML=`<td>Default</td><td>其他全部</td><td>${params.espDefault.fast}</td><td>${params.espDefault.slow}</td>`;
     rb.appendChild(trD);
 
     tb.querySelectorAll("input").forEach(inp=>{
@@ -391,9 +375,9 @@
     const s=readState();
     const c=compute(s);
 
-    $("kpiOrigin").textContent=產地：${s.origin};
-    $("kpiDose").textContent=Dose：${s.dose} g;
-    $("kpiMeta").textContent=${s.beanType==="single"?"單一":"拼配"} / ${s.profile} / ${s.mode} / ${s.roast};
+    $("kpiOrigin").textContent=`產地：${s.origin}`;
+    $("kpiDose").textContent=`Dose：${s.dose} g`;
+    $("kpiMeta").textContent=`${s.beanType==="single"?"單一":"拼配"} / ${s.profile} / ${s.mode} / ${s.roast}`;
 
     const showEsp=(s.brew==="espresso"||s.brew==="both");
     const showPO=(s.brew==="pourover"||s.brew==="both");
@@ -429,8 +413,13 @@
       else if (s.brew==="pourover") text=formatPO(s,c);
       else text=formatEsp(s,c) + "\n\n" + formatPO(s,c);
 
-      try{ await navigator.clipboard.writeText(text); $("copy").textContent="已複製"; setTimeout(()=> $("copy").textContent="複製輸出文字", 900); }
-      catch(e){ alert("無法直接複製，請手動選取文字複製。"); }
+      try{
+        await navigator.clipboard.writeText(text);
+        $("copy").textContent="已複製";
+        setTimeout(()=> $("copy").textContent="複製輸出文字", 900);
+      }catch(e){
+        alert("無法直接複製，請手動選取文字複製。");
+      }
     });
   }
 
